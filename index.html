@@ -85,12 +85,30 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 10px;
+      gap: 15px;
       margin: 20px auto;
     }
 
-    #preview img {
-      width: 100px;
+    .preview-item {
+      width: 140px;
+      text-align: center;
+      position: relative;
+      cursor: move;
+    }
+
+    .preview-item span {
+      position: absolute;
+      top: 2px;
+      left: 5px;
+      background: #007acc;
+      color: white;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+
+    .preview-item img {
+      width: 100%;
       height: auto;
       border: 1px solid #ccc;
       padding: 5px;
@@ -250,12 +268,14 @@
 
     function handleFilePreview(files) {
       preview.innerHTML = '';
-      Array.from(files).forEach(file => {
+      Array.from(files).forEach((file, index) => {
         const reader = new FileReader();
         reader.onload = e => {
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          preview.appendChild(img);
+          const div = document.createElement('div');
+          div.className = 'preview-item';
+          div.draggable = true;
+          div.innerHTML = `<span>${index + 1}</span><img src="${e.target.result}" />`;
+          preview.appendChild(div);
         };
         reader.readAsDataURL(file);
       });
@@ -269,8 +289,8 @@
         format: document.getElementById('pageSize').value
       });
 
-      const files = fileInput.files;
-      if (!files.length) {
+      const imgs = document.querySelectorAll('.preview-item img');
+      if (!imgs.length) {
         statusText.textContent = "Please select at least one image.";
         return;
       }
@@ -278,30 +298,25 @@
       progressBar.style.display = 'block';
       progressBarInner.style.width = '0%';
 
-      for (let i = 0; i < files.length; i++) {
-        const imgData = await readFileAsync(files[i]);
-        const img = new Image();
-        img.src = imgData;
-        await img.decode();
-        const width = pdf.internal.pageSize.getWidth();
-        const height = pdf.internal.pageSize.getHeight();
-        pdf.addImage(img, 'JPEG', 0, 0, width, height);
-        if (i < files.length - 1) pdf.addPage();
-        progressBarInner.style.width = `${((i + 1) / files.length) * 100}%`;
+      for (let i = 0; i < imgs.length; i++) {
+        const img = imgs[i];
+        await new Promise(res => {
+          const temp = new Image();
+          temp.src = img.src;
+          temp.onload = () => {
+            const width = pdf.internal.pageSize.getWidth();
+            const height = pdf.internal.pageSize.getHeight();
+            pdf.addImage(temp, 'JPEG', 0, 0, width, height);
+            if (i < imgs.length - 1) pdf.addPage();
+            progressBarInner.style.width = `${((i + 1) / imgs.length) * 100}%`;
+            res();
+          }
+        });
       }
 
       pdf.save("converted.pdf");
       statusText.textContent = "Download complete!";
       progressBar.style.display = 'none';
-    }
-
-    function readFileAsync(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
     }
   </script>
 </body>

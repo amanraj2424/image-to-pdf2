@@ -65,7 +65,7 @@
     </button>
   </main>
 
-  <!-- How to Use Section with Icons -->
+  <!-- How to Use Section -->
   <section class="max-w-3xl mx-auto mt-8 p-6 bg-white rounded shadow-md">
     <h2 class="text-xl font-semibold mb-4">How to Use JPG to PDF Converter</h2>
     <ol class="list-decimal list-inside text-left text-sm text-gray-700 space-y-2">
@@ -79,7 +79,7 @@
     </div>
   </section>
 
-  <!-- FAQ Section with Collapsible Items -->
+  <!-- FAQ Section -->
   <section class="max-w-3xl mx-auto mt-8 p-6 bg-white rounded shadow-md">
     <h2 class="text-xl font-semibold mb-4">Frequently Asked Questions</h2>
     <div class="text-left text-sm text-gray-700">
@@ -104,178 +104,119 @@
   </footer>
 
 <script>
-  const fileElem = document.getElementById('fileElem');
-  const dropArea = document.getElementById('drop-area');
-  const preview = document.getElementById('preview');
-  const downloadBtn = document.getElementById('downloadBtn');
-  const loadingText = document.createElement('p');
-  loadingText.className = 'text-sm text-blue-600 mt-2';
-  loadingText.innerText = 'Processing images...';
+const fileElem = document.getElementById('fileElem');
+const dropArea = document.getElementById('drop-area');
+const preview = document.getElementById('preview');
+const downloadBtn = document.getElementById('downloadBtn');
+const loadingText = document.createElement('p');
+loadingText.className = 'text-sm text-blue-600 mt-2';
+loadingText.innerText = 'Processing images...';
 
-  let imageFiles = [];
+let imageFiles = [];
 
-  fileElem.setAttribute('capture', 'environment');
-  fileElem.addEventListener('change', handleFiles);
-  dropArea.addEventListener('dragover', e => e.preventDefault());
-  dropArea.addEventListener('drop', e => {
-    e.preventDefault();
-    handleFiles({ target: { files: e.dataTransfer.files } });
-  });
+fileElem.setAttribute('capture', 'environment');
+fileElem.addEventListener('change', handleFiles);
+dropArea.addEventListener('dragover', e => e.preventDefault());
+dropArea.addEventListener('drop', e => {
+  e.preventDefault();
+  handleFiles({ target: { files: e.dataTransfer.files } });
+});
 
-  function handleFiles(event) {
-    const files = [...event.target.files];
-    imageFiles = imageFiles.concat(files);
-    renderPreview();
-  }
+function handleFiles(event) {
+  const files = [...event.target.files];
+  imageFiles = imageFiles.concat(files);
+  renderPreview();
+}
 
-  function renderPreview() {
-    preview.innerHTML = '';
-    preview.appendChild(loadingText);
-    let count = 0;
-    const promises = imageFiles.map((file, index) => new Promise(resolve => {
-      const reader = new FileReader();
-      reader.onload = e => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'relative group text-center';
-        wrapper.draggable = true;
-        wrapper.dataset.index = index;
+function renderPreview() {
+  preview.innerHTML = '';
+  preview.appendChild(loadingText);
+  let count = 0;
+  const promises = imageFiles.map((file, index) => new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'relative group text-center';
+      wrapper.draggable = true;
+      wrapper.dataset.index = index;
 
-        const number = document.createElement('div');
-        number.innerText = `#${index + 1}`;
-        number.className = 'absolute top-0 left-0 bg-black text-white text-xs px-1 rounded-br';
+      const number = document.createElement('div');
+      number.innerText = `#${index + 1}`;
+      number.className = 'absolute top-0 left-0 bg-black text-white text-xs px-1 rounded-br';
 
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.className = 'w-32 h-32 object-cover rounded shadow';
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.className = 'w-32 h-32 object-cover rounded shadow';
 
-        const deleteBtn = document.createElement('button');
-        deleteBtn.innerText = '✕';
-        deleteBtn.className = 'absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded hidden group-hover:block';
-        deleteBtn.onclick = () => {
-          imageFiles.splice(index, 1);
-          renderPreview();
-        };
-
-        wrapper.appendChild(number);
-        wrapper.appendChild(img);
-        wrapper.appendChild(deleteBtn);
-        preview.appendChild(wrapper);
-        count++;
-        if (count === imageFiles.length) loadingText.remove();
-        resolve();
+      const deleteBtn = document.createElement('button');
+      deleteBtn.innerText = '✕';
+      deleteBtn.className = 'absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded hidden group-hover:block';
+      deleteBtn.onclick = () => {
+        imageFiles.splice(index, 1);
+        renderPreview();
       };
-      reader.readAsDataURL(file);
-    }));
 
-    Promise.all(promises).then(enableReorder);
-  }
+      wrapper.appendChild(number);
+      wrapper.appendChild(img);
+      wrapper.appendChild(deleteBtn);
+      preview.appendChild(wrapper);
+      count++;
+      if (count === imageFiles.length) loadingText.remove();
+      resolve();
+    };
+    reader.readAsDataURL(file);
+  }));
 
-  function enableReorder() {
+  Promise.all(promises).then(enableReorder);
+}
+
+function enableReorder() {
   let dragged;
   preview.querySelectorAll('div').forEach(item => {
-    item.setAttribute('touchstart', '');
     item.addEventListener('dragstart', e => {
       dragged = e.currentTarget;
       e.dataTransfer.effectAllowed = 'move';
     });
-    item.addEventListener('dragover', e => {
-      e.preventDefault();
-    });
+    item.addEventListener('dragover', e => e.preventDefault());
     item.addEventListener('drop', e => {
       e.preventDefault();
-      const fromIndex = +dragged.dataset.index;
-      const toIndex = +e.currentTarget.dataset.index;
-      if (fromIndex !== toIndex) {
-        const movedItem = imageFiles.splice(fromIndex, 1)[0];
-        imageFiles.splice(toIndex, 0, movedItem);
+      const from = +dragged.dataset.index;
+      const to = +e.currentTarget.dataset.index;
+      if (from !== to) {
+        const movedItem = imageFiles.splice(from, 1)[0];
+        imageFiles.splice(to, 0, movedItem);
         renderPreview();
       }
     });
   });
 }
-    item.addEventListener('dragover', e => {
-      e.preventDefault();
-    });
-    item.addEventListener('drop', e => {
-      e.preventDefault();
-      const fromIndex = +dragged.dataset.index;
-      const toIndex = +e.currentTarget.dataset.index;
-      if (fromIndex !== toIndex) {
-        const movedItem = imageFiles.splice(fromIndex, 1)[0];
-        imageFiles.splice(toIndex, 0, movedItem);
-        renderPreview();
-      }
-    });
-  });
+
+downloadBtn.addEventListener('click', async () => {
+  downloadBtn.disabled = true;
+  downloadBtn.innerText = 'Creating PDF...';
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: orientation.value, unit: 'px', format: pageSize.value });
+  for (let i = 0; i < imageFiles.length; i++) {
+    const imgData = await readFileAsDataURL(imageFiles[i]);
+    const img = new Image();
+    img.src = imgData;
+    await new Promise(resolve => img.onload = resolve);
+    pdf.addImage(img, 'JPEG', 10, 10, pdf.internal.pageSize.getWidth() - 20, pdf.internal.pageSize.getHeight() - 20);
+    if (i < imageFiles.length - 1) pdf.addPage();
+  }
+  pdf.save('converted.pdf');
+  downloadBtn.disabled = false;
+  downloadBtn.innerText = 'Download PDF';
 });
-      item.addEventListener('dragover', e => {
-        e.preventDefault();
-        const bounding = e.target.getBoundingClientRect();
-        const offset = bounding.y + (bounding.height / 2);
-        if (e.clientY - offset > 0) {
-          e.target.style['border-bottom'] = '2px solid #000';
-          e.target.style['border-top'] = '';
-        } else {
-          e.target.style['border-top'] = '2px solid #000';
-          e.target.style['border-bottom'] = '';
-        }
-      });
-      item.addEventListener('dragleave', e => {
-        e.target.style['border-bottom'] = '';
-        e.target.style['border-top'] = '';
-      });
-      item.addEventListener('drop', e => {
-        e.preventDefault();
-        const from = +dragged.dataset.index;
-        const to = +e.target.closest('div').dataset.index;
-        const movedItem = imageFiles.splice(from, 1)[0];
-        imageFiles.splice(to, 0, movedItem);
-        renderPreview();
-      });
-    });
-  }
 
-  downloadBtn.addEventListener('click', async () => {
-    downloadBtn.disabled = true;
-    downloadBtn.innerText = 'Creating PDF...';
-
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: orientation.value, unit: 'px', format: pageSize.value });
-
-    for (let i = 0; i < imageFiles.length; i++) {
-      const imgData = await readFileAsDataURL(imageFiles[i]);
-      const img = new Image();
-      img.src = imgData;
-      await new Promise(resolve => img.onload = resolve);
-      pdf.addImage(img, 'JPEG', 10, 10, pdf.internal.pageSize.getWidth() - 20, pdf.internal.pageSize.getHeight() - 20);
-      if (i < imageFiles.length - 1) pdf.addPage();
-    }
-
-    pdf.save('converted.pdf');
-    downloadBtn.disabled = false;
-    downloadBtn.innerText = 'Download PDF';
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
   });
-
-    for (let i = 0; i < imageFiles.length; i++) {
-      const imgData = await readFileAsDataURL(imageFiles[i]);
-      const img = new Image();
-      img.src = imgData;
-      await new Promise(resolve => img.onload = resolve);
-      pdf.addImage(img, 'JPEG', 10, 10, pdf.internal.pageSize.getWidth() - 20, pdf.internal.pageSize.getHeight() - 20);
-      if (i < imageFiles.length - 1) pdf.addPage();
-    }
-
-    pdf.save('converted.pdf');
-  });
-
-  function readFileAsDataURL(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
+}
 </script>
 </body>
 </html>

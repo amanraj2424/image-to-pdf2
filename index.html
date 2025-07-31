@@ -1,141 +1,141 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Image to PDF Converter</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    #dropZone {
-      border: 2px dashed #aaa;
-      padding: 30px;
-      border-radius: 10px;
-      background-color: #f9f9f9;
-      cursor: pointer;
-    }
-    #dropZone.hover {
-      background-color: #e0f7fa;
-    }
-    .image-thumb {
-      max-width: 100px;
-      margin: 10px;
-      cursor: move;
-    }
-    #loader {
-      display: none;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image to PDF - Enhanced</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body class="bg-light">
-  <div class="container py-4">
-    <h2 class="text-center mb-4">Image to PDF Converter</h2>
+<body>
+  <header>
+    <h1>🖼️ Image to PDF Converter</h1>
+    <button onclick="toggleDarkMode()">🌓 Toggle Dark Mode</button>
+  </header>
 
-    <div id="dropZone" class="text-center mb-3">
-      <p class="mb-0">Drag & Drop JPG/PNG or <span class="text-primary">Click to Upload</span></p>
-      <input type="file" id="fileInput" multiple accept="image/jpeg, image/png" hidden>
+  <main>
+    <input type="file" id="imageUpload" multiple accept="image/*" />
+    <div id="previewContainer"></div>
+
+    <div class="pdf-options">
+      <label>Paper Size:
+        <select id="paperSize">
+          <option value="a4">A4</option>
+          <option value="letter">Letter</option>
+        </select>
+      </label>
+      <label>Orientation:
+        <select id="orientation">
+          <option value="portrait">Portrait</option>
+          <option value="landscape">Landscape</option>
+        </select>
+      </label>
+      <label>
+        <input type="checkbox" id="addPageNumbers" />
+        Add Page Numbers
+      </label>
     </div>
 
-    <div class="d-flex flex-wrap justify-content-center sortable" id="preview"></div>
+    <button onclick="generatePDF()">📄 Generate PDF</button>
+    <p id="statusMessage"></p>
+  </main>
 
-    <div class="text-center mt-4">
-      <button id="convertBtn" class="btn btn-primary">Convert to PDF</button>
-      <div id="loader" class="mt-2 text-muted">Converting... Please wait.</div>
-    </div>
+  <footer>
+    <p>Made with ❤️ in India | Co-powered by Aasman</p>
+  </footer>
 
-    <div class="text-center mt-3">
-      <button class="btn btn-outline-secondary" onclick="copyLink()">🔗 Share This Tool</button>
-      <div id="copied" class="text-success mt-1" style="display:none;">Link copied!</div>
-    </div>
-
-    <footer class="text-center mt-5 text-muted small">
-      Made with ❤️ in India | Co-powered by Aasman
-    </footer>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script>
-    const { jsPDF } = window.jspdf;
-    const fileInput = document.getElementById('fileInput');
-    const dropZone = document.getElementById('dropZone');
-    const preview = document.getElementById('preview');
-    const loader = document.getElementById('loader');
     let images = [];
 
-    dropZone.addEventListener('click', () => fileInput.click());
-
-    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
-
-    dropZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      dropZone.classList.add('hover');
+    document.getElementById('imageUpload').addEventListener('change', function(event) {
+      images = Array.from(event.target.files);
+      renderPreviews();
     });
 
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('hover'));
+    function renderPreviews() {
+      const container = document.getElementById('previewContainer');
+      container.innerHTML = "";
+      images.forEach((image, index) => {
+        const imgURL = URL.createObjectURL(image);
+        const wrapper = document.createElement('div');
+        wrapper.className = "preview-image";
 
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('hover');
-      handleFiles(e.dataTransfer.files);
-    });
+        const img = document.createElement('img');
+        img.src = imgURL;
 
-    function handleFiles(files) {
-      images = [];
-      preview.innerHTML = '';
-      Array.from(files).forEach(file => {
-        if (file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.className = "image-thumb";
-            img.setAttribute('data-file', file.name);
-            preview.appendChild(img);
-            images.push(e.target.result);
-          };
-          reader.readAsDataURL(file);
-        }
+        const delBtn = document.createElement('button');
+        delBtn.className = "delete-btn";
+        delBtn.innerText = "✖";
+        delBtn.onclick = () => {
+          images.splice(index, 1);
+          renderPreviews();
+        };
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(delBtn);
+        container.appendChild(wrapper);
       });
     }
 
-    new Sortable(preview, {
-      animation: 150,
-    });
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
 
-    document.getElementById('convertBtn').addEventListener('click', () => {
-      if (preview.children.length === 0) return alert("Please upload images first.");
+    function generatePDF() {
+      const status = document.getElementById('statusMessage');
+      if (images.length === 0) {
+        status.innerText = "Please upload at least one image.";
+        return;
+      }
 
-      loader.style.display = "block";
-      const pdf = new jsPDF();
-
-      const orderedImages = Array.from(preview.children).map(img => img.src);
-      let count = 0;
-
-      orderedImages.forEach((src, i) => {
-        const img = new Image();
-        img.src = src;
-        img.onload = () => {
-          const width = pdf.internal.pageSize.getWidth();
-          const height = (img.height * width) / img.width;
-          if (i !== 0) pdf.addPage();
-          pdf.addImage(img, src.startsWith('data:image/png') ? 'PNG' : 'JPEG', 0, 0, width, height);
-          count++;
-          if (count === orderedImages.length) {
-            pdf.save("converted.pdf");
-            loader.style.display = "none";
-          }
-        };
-      });
-    });
-
-    function copyLink() {
-      navigator.clipboard.writeText(window.location.href).then(() => {
-        document.getElementById('copied').style.display = 'block';
-        setTimeout(() => document.getElementById('copied').style.display = 'none', 2000);
-      });
+      status.innerText = "Generating PDF...";
+      setTimeout(() => {
+        status.innerText = "✅ PDF generated (simulated)";
+      }, 2000);
     }
   </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .dark-mode {
+      background-color: #121212;
+      color: white;
+    }
+    header, footer {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    #previewContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .preview-image {
+      position: relative;
+    }
+    .preview-image img {
+      max-width: 100px;
+      border-radius: 8px;
+    }
+    .delete-btn {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .pdf-options {
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+  </style>
 </body>
 </html>
+
 

@@ -28,7 +28,6 @@
         <li><a href="#" class="hover:underline">JPG to PDF</a></li>
         <li><a href="#" class="hover:underline">Tool 2</a></li>
         <li><a href="#" class="hover:underline">Tool 3</a></li>
-        <li><a href="#" class="hover:underline">Tool 4</a></li>
       </ul>
     </nav>
   </header>
@@ -114,7 +113,6 @@ loadingText.innerText = 'Processing images...';
 
 let imageFiles = [];
 
-fileElem.setAttribute('capture', 'environment');
 fileElem.addEventListener('change', handleFiles);
 dropArea.addEventListener('dragover', e => e.preventDefault());
 dropArea.addEventListener('drop', e => {
@@ -196,27 +194,13 @@ downloadBtn.addEventListener('click', async () => {
   downloadBtn.innerText = 'Creating PDF...';
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ orientation: orientation.value, unit: 'px', format: pageSize.value });
+
   for (let i = 0; i < imageFiles.length; i++) {
     const imgData = await readFileAsDataURL(imageFiles[i]);
     const img = new Image();
     img.src = imgData;
     await new Promise(resolve => img.onload = resolve);
-    pdf.addImage(img, 'JPEG', 10, 10, pdf.internal.pageSize.getWidth() - 20, pdf.internal.pageSize.getHeight() - 20);
-    if (i < imageFiles.length - 1) pdf.addPage();
-  }
-  pdf.save('converted.pdf');
-  downloadBtn.disabled = false;
-  downloadBtn.innerText = 'Download PDF';
-});
 
-function readFileAsDataURL(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-</script>
-</body>
-</html>
+    // Maintain aspect ratio
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();

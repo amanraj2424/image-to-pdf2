@@ -1,324 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>JPG to PDF Converter</title>
   <style>
-    * {
-      box-sizing: border-box;
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f0ff;
       margin: 0;
       padding: 0;
-      font-family: Arial, sans-serif;
-    }
-
-    body {
-      background-color: #e6f2ff;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      align-items: center;
       text-align: center;
     }
 
     header {
       background-color: #3399ff;
-      width: 100%;
-      padding: 10px 20px;
+      padding: 1rem;
       color: white;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      font-size: 1.5rem;
     }
 
-    .menu {
-      display: flex;
-      gap: 15px;
-      font-weight: bold;
+    .tool-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
-    .menu a {
-      color: white;
-      text-decoration: none;
-    }
-
-    h1 {
-      font-size: 32px;
-      margin: 30px 0 20px;
-      font-weight: bold;
-    }
-
-    .upload-container {
-      background-color: #b3e0ff;
-      border: 2px dashed #007acc;
+    .upload-box {
+      border: 2px dashed #87cefa;
+      background-color: #d0ebff;
+      padding: 2rem;
+      cursor: pointer;
       border-radius: 10px;
-      padding: 40px 20px;
-      width: 90%;
-      max-width: 600px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      margin-bottom: 1rem;
       position: relative;
     }
 
-    .upload-container .hint {
-      margin-top: 10px;
-      font-size: 14px;
-      color: #004d80;
-    }
-
-    #fileInput {
+    .upload-box input {
       display: none;
     }
 
-    label[for="fileInput"] {
-      background-color: #007acc;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
+    .upload-box:hover {
+      background-color: #cce7ff;
     }
 
-    #preview {
+    .upload-box p {
+      margin-top: 1rem;
+      color: #555;
+    }
+
+    .preview-area {
       display: flex;
       flex-wrap: wrap;
-      justify-content: center;
       gap: 15px;
-      margin: 20px auto;
+      justify-content: center;
     }
 
-    .preview-item {
-      width: 140px;
-      text-align: center;
+    .preview-thumb {
       position: relative;
-      cursor: move;
+      width: 150px;
+      height: 200px;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
-    .preview-item span {
+    .preview-thumb img {
+      max-width: 100%;
+      max-height: 150px;
+    }
+
+    .preview-thumb .delete-btn {
       position: absolute;
       top: 2px;
-      left: 5px;
-      background: #007acc;
-      color: white;
-      padding: 2px 5px;
-      border-radius: 3px;
-      font-size: 12px;
-    }
-
-    .preview-item img {
-      width: 100%;
-      height: auto;
-      border: 1px solid #ccc;
-      padding: 5px;
-      background: white;
-      border-radius: 5px;
-    }
-
-    .options {
-      margin: 20px auto;
-    }
-
-    .options label {
-      margin: 0 10px;
-    }
-
-    button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      background-color: #007acc;
-      color: white;
-      border: none;
-      border-radius: 5px;
+      right: 5px;
+      color: red;
       cursor: pointer;
       font-weight: bold;
+    }
+
+    .preview-thumb .drag-hint {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .preview-thumb .number-label {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: #3399ff;
+      color: white;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .controls select,
+    .controls button {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      font-size: 1rem;
+      width: 100%;
+      max-width: 300px;
+      margin: auto;
+    }
+
+    .controls button {
+      background-color: #3399ff;
+      color: white;
+      cursor: pointer;
+    }
+
+    .controls button:disabled {
+      background-color: #87cefa;
+      cursor: not-allowed;
     }
 
     footer {
-      margin-top: auto;
-      background-color: #3399ff;
-      color: white;
-      text-align: center;
-      padding: 10px;
-      width: 100%;
-      font-size: 14px;
+      margin-top: 2rem;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: #333;
     }
 
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      padding: 20px;
-    }
-
-    .tooltip {
-      border-bottom: 1px dotted #000;
-      cursor: help;
-      position: relative;
-    }
-
-    .tooltip:hover::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      background: #333;
-      color: #fff;
-      padding: 5px 10px;
-      border-radius: 5px;
-      top: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      white-space: nowrap;
-    }
-
-    #progressBar {
-      width: 100%;
-      max-width: 600px;
-      height: 10px;
-      background-color: #ccc;
-      border-radius: 5px;
-      overflow: hidden;
-      margin-top: 10px;
-      display: none;
-    }
-
-    #progressBarInner {
-      height: 100%;
-      width: 0%;
-      background-color: #007acc;
-      transition: width 0.3s;
+    @media (max-width: 600px) {
+      .preview-thumb {
+        width: 110px;
+        height: 150px;
+      }
     }
   </style>
 </head>
-
 <body>
+
   <header>
-    <div class="logo">Aasman Tools</div>
-    <nav class="menu">
-      <a href="#">JPG to PDF</a>
-      <a href="#">(More Tools Coming)</a>
-    </nav>
+    JPG to PDF Converter
   </header>
 
-  <div class="container">
-    <h1>Convert JPG to PDF</h1>
+  <div class="tool-container">
+    <label class="upload-box" for="fileInput">
+      <strong>CHOOSE FILES</strong>
+      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple>
+      <p>(or drop files here)</p>
+    </label>
 
-    <div class="upload-container" id="dropArea">
-      <label for="fileInput">CHOOSE FILES</label>
-      <span class="hint">or drop files here</span>
-      <input type="file" id="fileInput" accept="image/jpeg" multiple>
+    <div class="preview-area" id="previewArea"></div>
+
+    <div class="controls">
+      <select id="pageSize">
+        <option value="a4">A4</option>
+        <option value="letter">Letter</option>
+      </select>
+      <select id="orientation">
+        <option value="portrait">Portrait</option>
+        <option value="landscape">Landscape</option>
+      </select>
+      <button id="generateBtn">Download PDF</button>
     </div>
-
-    <div id="preview"></div>
-
-    <div class="options">
-      <label class="tooltip" data-tooltip="Standard paper size">Page Size:
-        <select id="pageSize">
-          <option value="a4">A4</option>
-          <option value="letter">Letter</option>
-        </select>
-      </label>
-      <label class="tooltip" data-tooltip="Vertical or horizontal layout">Orientation:
-        <select id="orientation">
-          <option value="portrait">Portrait</option>
-          <option value="landscape">Landscape</option>
-        </select>
-      </label>
-    </div>
-
-    <button onclick="generatePDF()">Download PDF</button>
-    <div id="progressBar"><div id="progressBarInner"></div></div>
-    <p id="status"></p>
   </div>
 
   <footer>
-    Made with ❤️ in India | Copowered by Aasman | <a href="mailto:hello@aasman.in" style="color: white; text-decoration: underline;">Contact</a>
+    Made with ❤️ in India | Copowered by Aasman
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    const fileInput = document.getElementById('fileInput');
-    const preview = document.getElementById('preview');
-    const statusText = document.getElementById('status');
-    const dropArea = document.getElementById('dropArea');
-    const progressBar = document.getElementById('progressBar');
-    const progressBarInner = document.getElementById('progressBarInner');
+    const fileInput = document.getElementById("fileInput");
+    const previewArea = document.getElementById("previewArea");
+    const generateBtn = document.getElementById("generateBtn");
+    let images = [];
 
-    dropArea.addEventListener('dragover', (e) => {
+    fileInput.addEventListener("change", handleFiles);
+    document.querySelector(".upload-box").addEventListener("dragover", e => {
       e.preventDefault();
-      dropArea.style.backgroundColor = '#99d6ff';
+      e.dataTransfer.dropEffect = "copy";
     });
-
-    dropArea.addEventListener('dragleave', () => {
-      dropArea.style.backgroundColor = '#b3e0ff';
-    });
-
-    dropArea.addEventListener('drop', (e) => {
+    document.querySelector(".upload-box").addEventListener("drop", e => {
       e.preventDefault();
-      dropArea.style.backgroundColor = '#b3e0ff';
-      const files = e.dataTransfer.files;
-      fileInput.files = files;
-      handleFilePreview(files);
+      handleFiles({ target: { files: e.dataTransfer.files } });
     });
 
-    fileInput.addEventListener('change', () => {
-      handleFilePreview(fileInput.files);
-    });
-
-    function handleFilePreview(files) {
-      preview.innerHTML = '';
-      Array.from(files).forEach((file, index) => {
+    function handleFiles(e) {
+      [...e.target.files].forEach(file => {
+        if (!file.type.startsWith("image/")) return;
         const reader = new FileReader();
-        reader.onload = e => {
-          const div = document.createElement('div');
-          div.className = 'preview-item';
-          div.draggable = true;
-          div.innerHTML = `<span>${index + 1}</span><img src="${e.target.result}" />`;
-          preview.appendChild(div);
+        reader.onload = () => {
+          images.push(reader.result);
+          renderImages();
         };
         reader.readAsDataURL(file);
       });
     }
 
-    async function generatePDF() {
+    function renderImages() {
+      previewArea.innerHTML = "";
+      images.forEach((src, index) => {
+        const div = document.createElement("div");
+        div.className = "preview-thumb";
+        div.draggable = true;
+        div.dataset.index = index;
+
+        div.innerHTML = `
+          <div class="number-label">${index + 1}</div>
+          <span class="delete-btn" onclick="removeImage(${index})">×</span>
+          <img src="${src}" />
+          <div class="drag-hint">↕ Drag</div>
+        `;
+        div.addEventListener("dragstart", dragStart);
+        div.addEventListener("drop", drop);
+        div.addEventListener("dragover", e => e.preventDefault());
+        previewArea.appendChild(div);
+      });
+    }
+
+    function removeImage(index) {
+      images.splice(index, 1);
+      renderImages();
+    }
+
+    let dragged;
+    function dragStart(e) {
+      dragged = e.currentTarget.dataset.index;
+    }
+
+    function drop(e) {
+      const from = parseInt(dragged);
+      const to = parseInt(e.currentTarget.dataset.index);
+      const temp = images[from];
+      images.splice(from, 1);
+      images.splice(to, 0, temp);
+      renderImages();
+    }
+
+    generateBtn.addEventListener("click", async () => {
+      if (!images.length) return;
+
+      generateBtn.disabled = true;
+      generateBtn.innerText = "Generating...";
+
       const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({
-        orientation: document.getElementById('orientation').value,
-        unit: 'pt',
-        format: document.getElementById('pageSize').value
+      const doc = new jsPDF({
+        orientation: document.getElementById("orientation").value,
+        unit: "px",
+        format: document.getElementById("pageSize").value
       });
 
-      const imgs = document.querySelectorAll('.preview-item img');
-      if (!imgs.length) {
-        statusText.textContent = "Please select at least one image.";
-        return;
+      for (let i = 0; i < images.length; i++) {
+        if (i > 0) doc.addPage();
+        doc.addImage(images[i], "JPEG", 20, 20, 550, 750);
       }
 
-      progressBar.style.display = 'block';
-      progressBarInner.style.width = '0%';
-
-      for (let i = 0; i < imgs.length; i++) {
-        const img = imgs[i];
-        await new Promise(res => {
-          const temp = new Image();
-          temp.src = img.src;
-          temp.onload = () => {
-            const width = pdf.internal.pageSize.getWidth();
-            const height = pdf.internal.pageSize.getHeight();
-            pdf.addImage(temp, 'JPEG', 0, 0, width, height);
-            if (i < imgs.length - 1) pdf.addPage();
-            progressBarInner.style.width = `${((i + 1) / imgs.length) * 100}%`;
-            res();
-          }
-        });
-      }
-
-      pdf.save("converted.pdf");
-      statusText.textContent = "Download complete!";
-      progressBar.style.display = 'none';
-    }
+      doc.save("converted.pdf");
+      generateBtn.disabled = false;
+      generateBtn.innerText = "Download PDF";
+    });
   </script>
 </body>
-
 </html>

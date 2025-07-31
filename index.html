@@ -1,4 +1,108 @@
-// Updated JavaScript to enable drag-drop reorder, delete, show image numbers, loading, and camera input
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JPG to PDF Converter</title>
+  <meta name="description" content="Free online JPG to PDF converter tool. Convert your images to PDF files instantly without signup.">
+  <meta name="keywords" content="jpg to pdf, image to pdf, online converter, free tool, convert jpg, image converter">
+  <meta name="author" content="Aasman Tools">
+  <link rel="canonical" href="https://amanraj2424.github.io/image-to-pdf2/"/>
+  <meta property="og:title" content="JPG to PDF Converter - Aasman Tools" />
+  <meta property="og:description" content="Convert your JPG images to PDF instantly. Free, fast, and without login." />
+  <meta property="og:image" content="https://amanraj2424.github.io/image-to-pdf2/preview.jpg" />
+  <meta property="og:url" content="https://amanraj2424.github.io/image-to-pdf2/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="google-site-verification" content="google9f613a164d1bcb77" />
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-blue-100 text-center">
+  <!-- Header with Menu -->
+  <header class="bg-blue-500 text-white py-4">
+    <h1 class="text-2xl font-bold">JPG to PDF Converter</h1>
+    <nav class="mt-2">
+      <ul class="flex justify-center gap-6 text-sm">
+        <li><a href="#" class="hover:underline">JPG to PDF</a></li>
+        <li><a href="#" class="hover:underline">Tool 2</a></li>
+        <li><a href="#" class="hover:underline">Tool 3</a></li>
+        <li><a href="#" class="hover:underline">Tool 4</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-3xl mx-auto mt-8 p-6 bg-white rounded shadow-md">
+    <h2 class="text-2xl font-bold mb-4">JPG to PDF</h2>
+
+    <!-- File Upload Box -->
+    <div id="drop-area" class="border-2 border-dashed border-blue-400 p-6 rounded-lg bg-sky-200 relative mt-6">
+      <input type="file" id="fileElem" multiple accept="image/*" class="hidden">
+      <label for="fileElem" class="cursor-pointer text-blue-900 font-semibold">CHOOSE FILES</label>
+      <p class="text-sm text-gray-700 mt-2">or drop files here</p>
+    </div>
+
+    <!-- Preview Images -->
+    <div id="preview" class="mt-4 flex flex-wrap justify-center gap-4"></div>
+
+    <!-- Options -->
+    <div class="flex flex-col md:flex-row justify-center items-center gap-4 mt-4">
+      <select id="pageSize" class="p-2 rounded border border-gray-300">
+        <option value="a4">A4</option>
+        <option value="letter">Letter</option>
+      </select>
+      <select id="orientation" class="p-2 rounded border border-gray-300">
+        <option value="portrait">Portrait</option>
+        <option value="landscape">Landscape</option>
+      </select>
+    </div>
+
+    <!-- Download Button -->
+    <button id="downloadBtn" class="mt-6 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+      Download PDF
+    </button>
+  </main>
+
+  <!-- How to Use Section with Icons -->
+  <section class="max-w-3xl mx-auto mt-8 p-6 bg-white rounded shadow-md">
+    <h2 class="text-xl font-semibold mb-4">How to Use JPG to PDF Converter</h2>
+    <ol class="list-decimal list-inside text-left text-sm text-gray-700 space-y-2">
+      <li>📂 Click on "Choose Files" or drag and drop your JPG images into the box.</li>
+      <li>🖱️ Reorder images by dragging them in the preview section.</li>
+      <li>📄 Select page size (A4 or Letter) and orientation (Portrait or Landscape).</li>
+      <li>⬇️ Click the "Download PDF" button to get your converted file instantly.</li>
+    </ol>
+    <div class="mt-4 bg-blue-50 p-4 rounded text-left text-sm text-blue-800">
+      📱 <strong>Mobile Friendly:</strong> Easily convert photos to PDF from your phone or tablet.
+    </div>
+  </section>
+
+  <!-- FAQ Section with Collapsible Items -->
+  <section class="max-w-3xl mx-auto mt-8 p-6 bg-white rounded shadow-md">
+    <h2 class="text-xl font-semibold mb-4">Frequently Asked Questions</h2>
+    <div class="text-left text-sm text-gray-700">
+      <details class="mb-3">
+        <summary class="cursor-pointer font-medium">How can I convert JPG to PDF for free?</summary>
+        <p class="mt-2">Upload your JPG images, drag to reorder, choose settings, and click "Download PDF".</p>
+      </details>
+      <details class="mb-3">
+        <summary class="cursor-pointer font-medium">Is this JPG to PDF converter safe to use?</summary>
+        <p class="mt-2">Yes. All conversions happen in your browser, and your files are never uploaded to a server.</p>
+      </details>
+      <details class="mb-3">
+        <summary class="cursor-pointer font-medium">Do I need to install any software?</summary>
+        <p class="mt-2">No installation needed. You can use it directly from your browser.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="mt-10 text-sm text-gray-700">
+    Made with ❤️ in India | Copowered by Aasman
+  </footer>
+
 <script>
   const fileElem = document.getElementById('fileElem');
   const dropArea = document.getElementById('drop-area');
@@ -10,7 +114,7 @@
 
   let imageFiles = [];
 
-  fileElem.setAttribute('capture', 'environment'); // enable mobile camera
+  fileElem.setAttribute('capture', 'environment');
   fileElem.addEventListener('change', handleFiles);
   dropArea.addEventListener('dragover', e => e.preventDefault());
   dropArea.addEventListener('drop', e => {
@@ -125,3 +229,5 @@
     });
   }
 </script>
+</body>
+</html>

@@ -14,14 +14,18 @@
     }
 
     body {
-      background-color: #e6f2ff; /* Light blue */
+      background-color: #e6f2ff;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
     }
 
     header {
-      background-color: #3399ff; /* Blue strip */
+      background-color: #3399ff;
+      width: 100%;
       padding: 10px 20px;
       color: white;
       display: flex;
@@ -40,60 +44,80 @@
       text-decoration: none;
     }
 
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 30px 20px;
-      text-align: center;
-    }
-
     h1 {
       font-size: 32px;
-      margin-bottom: 30px;
+      margin: 30px 0 20px;
       font-weight: bold;
     }
 
-    .upload-box {
-      background-color: #b3e0ff; /* Skyblue */
+    .upload-container {
+      background-color: #b3e0ff;
       border: 2px dashed #007acc;
       border-radius: 10px;
-      width: 100%;
-      max-width: 700px;
-      padding: 60px 20px;
+      padding: 40px 20px;
+      width: 90%;
+      max-width: 600px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
     }
 
-    .upload-box input[type='file'] {
+    #fileInput {
       display: none;
     }
 
-    .upload-box label {
+    label[for="fileInput"] {
       background-color: #007acc;
       color: white;
       padding: 10px 20px;
       border-radius: 5px;
       cursor: pointer;
       font-weight: bold;
-      margin-bottom: 10px;
     }
 
-    .drop-text {
-      color: #333;
-      font-size: 14px;
+    #preview {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px auto;
+    }
+
+    #preview img {
+      width: 100px;
+      height: auto;
+      border: 1px solid #ccc;
+      padding: 5px;
+      background: white;
+      border-radius: 5px;
+    }
+
+    .options {
+      margin: 20px auto;
+    }
+
+    .options label {
+      margin: 0 10px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #007acc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
     }
 
     footer {
+      margin-top: auto;
       background-color: #3399ff;
       color: white;
       text-align: center;
-      padding: 10px 20px;
+      padding: 10px;
+      width: 100%;
       font-size: 14px;
     }
   </style>
@@ -108,23 +132,97 @@
     </nav>
   </header>
 
-  <main>
-    <h1>Convert JPG to PDF</h1>
-    <div class="upload-box">
-      <label for="fileInput">CHOOSE FILES</label>
-      <input type="file" id="fileInput" accept="image/jpeg" multiple />
-      <div class="drop-text">or drop files here</div>
-    </div>
-  </main>
+  <h1>Convert JPG to PDF</h1>
+
+  <div class="upload-container">
+    <label for="fileInput">CHOOSE FILES</label>
+    <input type="file" id="fileInput" accept="image/jpeg" multiple>
+  </div>
+
+  <p style="margin-top: 20px;">or drop files here</p>
+  <div id="preview"></div>
+  <div class="options">
+    <label>Page Size:
+      <select id="pageSize">
+        <option value="a4">A4</option>
+        <option value="letter">Letter</option>
+      </select>
+    </label>
+    <label>Orientation:
+      <select id="orientation">
+        <option value="portrait">Portrait</option>
+        <option value="landscape">Landscape</option>
+      </select>
+    </label>
+  </div>
+  <button onclick="generatePDF()">Download PDF</button>
+  <p id="status"></p>
 
   <footer>
     Made with ❤️ in India | Copowered by Aasman
   </footer>
 
-  <!-- JS functionality can be added here later -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const statusText = document.getElementById('status');
+
+    fileInput.addEventListener('change', () => {
+      preview.innerHTML = '';
+      Array.from(fileInput.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    async function generatePDF() {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: document.getElementById('orientation').value,
+        unit: 'pt',
+        format: document.getElementById('pageSize').value
+      });
+
+      const files = fileInput.files;
+      if (!files.length) {
+        alert("Please select at least one image.");
+        return;
+      }
+
+      for (let i = 0; i < files.length; i++) {
+        const imgData = await readFileAsync(files[i]);
+        const img = new Image();
+        img.src = imgData;
+        await img.decode();
+        const width = pdf.internal.pageSize.getWidth();
+        const height = pdf.internal.pageSize.getHeight();
+        pdf.addImage(img, 'JPEG', 0, 0, width, height);
+        if (i < files.length - 1) pdf.addPage();
+      }
+
+      pdf.save("converted.pdf");
+      statusText.textContent = "Download complete!";
+    }
+
+    function readFileAsync(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+  </script>
 </body>
 
 </html>
+
 
 
 

@@ -146,7 +146,7 @@
 
         const img = document.createElement('img');
         img.src = e.target.result;
-        img.className = 'w-24 h-24 object-cover rounded shadow';
+        img.className = 'w-32 h-32 object-cover rounded shadow';
 
         const deleteBtn = document.createElement('button');
         deleteBtn.innerText = '✕';
@@ -171,12 +171,43 @@
   }
 
   function enableReorder() {
-    let dragged;
-    preview.querySelectorAll('div').forEach(item => {
-      item.addEventListener('dragstart', e => {
-        dragged = e.target;
-        e.dataTransfer.effectAllowed = 'move';
-      });
+  let dragged;
+  preview.querySelectorAll('div').forEach(item => {
+    item.setAttribute('touchstart', '');
+    item.addEventListener('dragstart', e => {
+      dragged = e.currentTarget;
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+    });
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      const fromIndex = +dragged.dataset.index;
+      const toIndex = +e.currentTarget.dataset.index;
+      if (fromIndex !== toIndex) {
+        const movedItem = imageFiles.splice(fromIndex, 1)[0];
+        imageFiles.splice(toIndex, 0, movedItem);
+        renderPreview();
+      }
+    });
+  });
+}
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+    });
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      const fromIndex = +dragged.dataset.index;
+      const toIndex = +e.currentTarget.dataset.index;
+      if (fromIndex !== toIndex) {
+        const movedItem = imageFiles.splice(fromIndex, 1)[0];
+        imageFiles.splice(toIndex, 0, movedItem);
+        renderPreview();
+      }
+    });
+  });
+});
       item.addEventListener('dragover', e => {
         e.preventDefault();
         const bounding = e.target.getBoundingClientRect();
@@ -205,8 +236,25 @@
   }
 
   downloadBtn.addEventListener('click', async () => {
+    downloadBtn.disabled = true;
+    downloadBtn.innerText = 'Creating PDF...';
+
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation: orientation.value, unit: 'px', format: pageSize.value });
+
+    for (let i = 0; i < imageFiles.length; i++) {
+      const imgData = await readFileAsDataURL(imageFiles[i]);
+      const img = new Image();
+      img.src = imgData;
+      await new Promise(resolve => img.onload = resolve);
+      pdf.addImage(img, 'JPEG', 10, 10, pdf.internal.pageSize.getWidth() - 20, pdf.internal.pageSize.getHeight() - 20);
+      if (i < imageFiles.length - 1) pdf.addPage();
+    }
+
+    pdf.save('converted.pdf');
+    downloadBtn.disabled = false;
+    downloadBtn.innerText = 'Download PDF';
+  });
 
     for (let i = 0; i < imageFiles.length; i++) {
       const imgData = await readFileAsDataURL(imageFiles[i]);

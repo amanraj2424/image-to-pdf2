@@ -1,0 +1,120 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image to PDF Converter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 30px auto;
+      text-align: center;
+      padding: 20px;
+    }
+    #dropZone {
+      border: 2px dashed #aaa;
+      padding: 30px;
+      margin: 20px 0;
+      border-radius: 10px;
+      cursor: pointer;
+      background-color: #f9f9f9;
+    }
+    #dropZone.hover {
+      background-color: #e0f7fa;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    #preview img {
+      max-width: 100%;
+      margin: 10px 0;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 20px 0;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h2>Image to PDF Converter</h2>
+  <label id="dropZone">
+    Drag & Drop JPG or PNG images here or click to upload
+    <input type="file" id="fileInput" multiple accept="image/jpeg, image/png">
+  </label>
+  <div id="preview"></div>
+  <button onclick="convertToPDF()">Convert to PDF</button>
+  <footer>Made with ❤️ in India | Co-powered by Aasman</footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const { jsPDF } = window.jspdf;
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const preview = document.getElementById('preview');
+    let images = [];
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('hover');
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('hover');
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('hover');
+      handleFiles(e.dataTransfer.files);
+    });
+    dropZone.addEventListener('click', () => {
+      fileInput.click();
+    });
+    function handleFiles(files) {
+      preview.innerHTML = '';
+      images = Array.from(files).filter(file => file.type === 'image/jpeg' || file.type === 'image/png');
+      if (images.length === 0) {
+        alert('Only JPG and PNG images are allowed.');
+        return;
+      }
+      images.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    function convertToPDF() {
+      if (images.length === 0) return alert("Please upload images first.");
+      const pdf = new jsPDF();
+      let count = 0;
+      images.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.src = e.target.result;
+          img.onload = () => {
+            const width = pdf.internal.pageSize.getWidth();
+            const height = (img.height * width) / img.width;
+            if (index !== 0) pdf.addPage();
+            pdf.addImage(img, img.src.startsWith('data:image/png') ? 'PNG' : 'JPEG', 0, 0, width, height);
+            count++;
+            if (count === images.length) {
+              pdf.save('converted.pdf');
+            }
+          };
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  </script>
+</body>
+</html>

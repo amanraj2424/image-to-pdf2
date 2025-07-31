@@ -2,275 +2,162 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JPG to PDF Converter</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #e6f0ff;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-
-    header {
-      background-color: #3399ff;
-      padding: 1rem;
-      color: white;
-      font-size: 1.5rem;
-    }
-
-    .tool-container {
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 1rem;
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    .upload-box {
-      border: 2px dashed #87cefa;
-      background-color: #d0ebff;
-      padding: 2rem;
-      cursor: pointer;
-      border-radius: 10px;
-      margin-bottom: 1rem;
-      position: relative;
-    }
-
-    .upload-box input {
-      display: none;
-    }
-
-    .upload-box:hover {
-      background-color: #cce7ff;
-    }
-
-    .upload-box p {
-      margin-top: 1rem;
-      color: #555;
-    }
-
-    .preview-area {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      justify-content: center;
-    }
-
-    .preview-thumb {
-      position: relative;
-      width: 150px;
-      height: 200px;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    .preview-thumb img {
-      max-width: 100%;
-      max-height: 150px;
-    }
-
-    .preview-thumb .delete-btn {
-      position: absolute;
-      top: 2px;
-      right: 5px;
-      color: red;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .preview-thumb .drag-hint {
-      font-size: 12px;
-      color: #888;
-      margin-top: 4px;
-    }
-
-    .preview-thumb .number-label {
-      position: absolute;
-      top: 5px;
-      left: 5px;
-      background: #3399ff;
-      color: white;
-      font-size: 12px;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-
-    .controls {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .controls select,
-    .controls button {
-      padding: 10px;
-      border-radius: 5px;
-      border: none;
-      font-size: 1rem;
-      width: 100%;
-      max-width: 300px;
-      margin: auto;
-    }
-
-    .controls button {
-      background-color: #3399ff;
-      color: white;
-      cursor: pointer;
-    }
-
-    .controls button:disabled {
-      background-color: #87cefa;
-      cursor: not-allowed;
-    }
-
-    footer {
-      margin-top: 2rem;
-      padding: 1rem;
-      font-size: 0.9rem;
-      color: #333;
-    }
-
-    @media (max-width: 600px) {
-      .preview-thumb {
-        width: 110px;
-        height: 150px;
-      }
-    }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
-<body>
-
-  <header>
-    JPG to PDF Converter
+<body class="bg-blue-100 text-center">
+  <!-- Header with Menu -->
+  <header class="bg-blue-500 text-white py-4">
+    <h1 class="text-2xl font-bold">JPG to PDF Converter</h1>
+    <nav class="mt-2">
+      <ul class="flex justify-center gap-6 text-sm">
+        <li><a href="#" class="hover:underline">JPG to PDF</a></li>
+        <li><a href="#" class="hover:underline">Tool 2</a></li>
+        <li><a href="#" class="hover:underline">Tool 3</a></li>
+        <li><a href="#" class="hover:underline">Tool 4</a></li>
+      </ul>
+    </nav>
   </header>
 
-  <div class="tool-container">
-    <label class="upload-box" for="fileInput">
-      <strong>CHOOSE FILES</strong>
-      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple>
-      <p>(or drop files here)</p>
-    </label>
+  <!-- Main Container -->
+  <main class="max-w-3xl mx-auto mt-8 p-6 bg-white rounded shadow-md">
+    <!-- File Upload Box -->
+    <div id="drop-area" class="border-2 border-dashed border-blue-400 p-6 rounded-lg bg-sky-200 relative">
+      <input type="file" id="fileElem" multiple accept="image/*" class="hidden">
+      <label for="fileElem" class="cursor-pointer text-blue-900 font-semibold">CHOOSE FILES</label>
+      <p class="text-sm text-gray-700 mt-2">or drop files here</p>
+    </div>
 
-    <div class="preview-area" id="previewArea"></div>
+    <!-- Preview Images Container -->
+    <div id="preview" class="mt-4 flex flex-wrap justify-center gap-4"></div>
 
-    <div class="controls">
-      <select id="pageSize">
+    <!-- Page & Orientation -->
+    <div class="flex flex-col md:flex-row justify-center items-center gap-4 mt-4">
+      <select id="pageSize" class="p-2 rounded border border-gray-300">
         <option value="a4">A4</option>
         <option value="letter">Letter</option>
       </select>
-      <select id="orientation">
+      <select id="orientation" class="p-2 rounded border border-gray-300">
         <option value="portrait">Portrait</option>
         <option value="landscape">Landscape</option>
       </select>
-      <button id="generateBtn">Download PDF</button>
     </div>
-  </div>
 
-  <footer>
+    <!-- Download Button -->
+    <button id="downloadBtn" class="mt-6 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+      Download PDF
+    </button>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-10 text-sm text-gray-700">
     Made with ❤️ in India | Copowered by Aasman
   </footer>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    const fileInput = document.getElementById("fileInput");
-    const previewArea = document.getElementById("previewArea");
-    const generateBtn = document.getElementById("generateBtn");
-    let images = [];
+    const dropArea = document.getElementById('drop-area');
+    const fileElem = document.getElementById('fileElem');
+    const preview = document.getElementById('preview');
+    let imageFiles = [];
 
-    fileInput.addEventListener("change", handleFiles);
-    document.querySelector(".upload-box").addEventListener("dragover", e => {
+    dropArea.addEventListener('dragover', (e) => {
       e.preventDefault();
-      e.dataTransfer.dropEffect = "copy";
-    });
-    document.querySelector(".upload-box").addEventListener("drop", e => {
-      e.preventDefault();
-      handleFiles({ target: { files: e.dataTransfer.files } });
+      dropArea.classList.add('bg-blue-100');
     });
 
-    function handleFiles(e) {
-      [...e.target.files].forEach(file => {
-        if (!file.type.startsWith("image/")) return;
+    dropArea.addEventListener('dragleave', () => {
+      dropArea.classList.remove('bg-blue-100');
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropArea.classList.remove('bg-blue-100');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    fileElem.addEventListener('change', () => {
+      handleFiles(fileElem.files);
+    });
+
+    function handleFiles(files) {
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) continue;
         const reader = new FileReader();
-        reader.onload = () => {
-          images.push(reader.result);
-          renderImages();
+        reader.onload = (e) => {
+          imageFiles.push(e.target.result);
+          renderPreviews();
         };
         reader.readAsDataURL(file);
-      });
+      }
     }
 
-    function renderImages() {
-      previewArea.innerHTML = "";
-      images.forEach((src, index) => {
-        const div = document.createElement("div");
-        div.className = "preview-thumb";
+    function renderPreviews() {
+      preview.innerHTML = '';
+      imageFiles.forEach((src, index) => {
+        const div = document.createElement('div');
+        div.className = 'relative';
         div.draggable = true;
         div.dataset.index = index;
 
-        div.innerHTML = `
-          <div class="number-label">${index + 1}</div>
-          <span class="delete-btn" onclick="removeImage(${index})">×</span>
-          <img src="${src}" />
-          <div class="drag-hint">↕ Drag</div>
-        `;
-        div.addEventListener("dragstart", dragStart);
-        div.addEventListener("drop", drop);
-        div.addEventListener("dragover", e => e.preventDefault());
-        previewArea.appendChild(div);
+        const img = document.createElement('img');
+        img.src = src;
+        img.className = 'w-32 h-32 object-cover border border-gray-300 rounded';
+
+        const label = document.createElement('div');
+        label.innerText = index + 1;
+        label.className = 'absolute top-0 left-0 bg-blue-500 text-white text-xs px-1 rounded-br';
+
+        div.appendChild(img);
+        div.appendChild(label);
+        preview.appendChild(div);
+
+        div.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', index);
+        });
+
+        div.addEventListener('dragover', (e) => e.preventDefault());
+
+        div.addEventListener('drop', (e) => {
+          e.preventDefault();
+          const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+          const toIndex = parseInt(div.dataset.index);
+          const [moved] = imageFiles.splice(fromIndex, 1);
+          imageFiles.splice(toIndex, 0, moved);
+          renderPreviews();
+        });
       });
     }
 
-    function removeImage(index) {
-      images.splice(index, 1);
-      renderImages();
-    }
-
-    let dragged;
-    function dragStart(e) {
-      dragged = e.currentTarget.dataset.index;
-    }
-
-    function drop(e) {
-      const from = parseInt(dragged);
-      const to = parseInt(e.currentTarget.dataset.index);
-      const temp = images[from];
-      images.splice(from, 1);
-      images.splice(to, 0, temp);
-      renderImages();
-    }
-
-    generateBtn.addEventListener("click", async () => {
-      if (!images.length) return;
-
-      generateBtn.disabled = true;
-      generateBtn.innerText = "Generating...";
-
+    document.getElementById('downloadBtn').addEventListener('click', async () => {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({
-        orientation: document.getElementById("orientation").value,
-        unit: "px",
-        format: document.getElementById("pageSize").value
+        orientation: document.getElementById('orientation').value,
+        unit: 'pt',
+        format: document.getElementById('pageSize').value
       });
 
-      for (let i = 0; i < images.length; i++) {
-        if (i > 0) doc.addPage();
-        doc.addImage(images[i], "JPEG", 20, 20, 550, 750);
+      for (let i = 0; i < imageFiles.length; i++) {
+        if (i !== 0) doc.addPage();
+        const img = new Image();
+        img.src = imageFiles[i];
+        await new Promise((resolve) => {
+          img.onload = () => {
+            const ratio = Math.min(
+              doc.internal.pageSize.getWidth() / img.width,
+              doc.internal.pageSize.getHeight() / img.height
+            );
+            const width = img.width * ratio;
+            const height = img.height * ratio;
+            const x = (doc.internal.pageSize.getWidth() - width) / 2;
+            const y = (doc.internal.pageSize.getHeight() - height) / 2;
+            doc.addImage(img, 'JPEG', x, y, width, height);
+            resolve();
+          };
+        });
       }
-
-      doc.save("converted.pdf");
-      generateBtn.disabled = false;
-      generateBtn.innerText = "Download PDF";
+      doc.save('converted.pdf');
     });
   </script>
 </body>

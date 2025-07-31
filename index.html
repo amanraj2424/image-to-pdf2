@@ -18,7 +18,6 @@
   <link rel="icon" type="image/png" href="/favicon.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://unpkg.com/@headlessui/react@latest/dist/headlessui.umd.js"></script>
 </head>
 <body class="bg-blue-100 text-center">
   <!-- Header with Menu -->
@@ -105,7 +104,59 @@
   </footer>
 
   <script>
-    // JavaScript remains unchanged
+    const fileElem = document.getElementById('fileElem');
+    const dropArea = document.getElementById('drop-area');
+    const preview = document.getElementById('preview');
+    const downloadBtn = document.getElementById('downloadBtn');
+    let imageFiles = [];
+
+    fileElem.addEventListener('change', handleFiles);
+    dropArea.addEventListener('dragover', e => e.preventDefault());
+    dropArea.addEventListener('drop', e => {
+      e.preventDefault();
+      handleFiles({ target: { files: e.dataTransfer.files } });
+    });
+
+    function handleFiles(event) {
+      const files = [...event.target.files];
+      imageFiles = files;
+      preview.innerHTML = '';
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'w-24 h-24 object-cover rounded shadow';
+          preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    downloadBtn.addEventListener('click', async () => {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: orientation.value, unit: 'px', format: pageSize.value });
+
+      for (let i = 0; i < imageFiles.length; i++) {
+        const imgData = await readFileAsDataURL(imageFiles[i]);
+        const img = new Image();
+        img.src = imgData;
+        await new Promise(resolve => img.onload = resolve);
+        pdf.addImage(img, 'JPEG', 10, 10, pdf.internal.pageSize.getWidth() - 20, pdf.internal.pageSize.getHeight() - 20);
+        if (i < imageFiles.length - 1) pdf.addPage();
+      }
+
+      pdf.save('converted.pdf');
+    });
+
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
   </script>
 </body>
 </html>

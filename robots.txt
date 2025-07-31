@@ -1,4 +1,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://amanraj2424.github.io/image-to-pdf/sitemap.xml
+Sitemap: https://amanraj2424.github.io/image-to-pdf2/sitemap.xml

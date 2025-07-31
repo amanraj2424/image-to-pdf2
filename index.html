@@ -1,208 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Image to PDF - Enhanced</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <nav class="navbar">
-    <div class="nav-title">🛠️ All-in-One Tools</div>
-    <ul class="nav-menu">
-      <li class="active">Image to PDF</li>
-      <li>Coming Soon</li>
-      <li>Coming Soon</li>
-    </ul>
-  </nav>
-
-  <header>
-    <h1>🖼️ Image to PDF Converter</h1>
-    <button onclick="toggleDarkMode()">🌓 Toggle Dark Mode</button>
-  </header>
-
-  <main class="centered">
-    <input type="file" id="imageUpload" multiple accept="image/*" />
-    <div id="previewContainer"></div>
-
-    <div class="pdf-options">
-      <label>Paper Size:
-        <select id="paperSize">
-          <option value="a4">A4</option>
-          <option value="letter">Letter</option>
-        </select>
-      </label>
-      <label>Orientation:
-        <select id="orientation">
-          <option value="portrait">Portrait</option>
-          <option value="landscape">Landscape</option>
-        </select>
-      </label>
-      <label>
-        <input type="checkbox" id="addPageNumbers" />
-        Add Page Numbers
-      </label>
-    </div>
-
-    <button onclick="generatePDF()">📄 Generate PDF</button>
-    <p id="statusMessage"></p>
-  </main>
-
-  <footer>
-    <p>Made with ❤️ in India | Co-powered by Aasman</p>
-  </footer>
-
-  <script>
-    let images = [];
-
-    document.getElementById('imageUpload').addEventListener('change', function(event) {
-      images = Array.from(event.target.files);
-      renderPreviews();
-    });
-
-    function renderPreviews() {
-      const container = document.getElementById('previewContainer');
-      container.innerHTML = "";
-      images.forEach((image, index) => {
-        const imgURL = URL.createObjectURL(image);
-        const wrapper = document.createElement('div');
-        wrapper.className = "preview-image";
-
-        const img = document.createElement('img');
-        img.src = imgURL;
-
-        const delBtn = document.createElement('button');
-        delBtn.className = "delete-btn";
-        delBtn.innerText = "✖";
-        delBtn.onclick = () => {
-          images.splice(index, 1);
-          renderPreviews();
-        };
-
-        wrapper.appendChild(img);
-        wrapper.appendChild(delBtn);
-        container.appendChild(wrapper);
-      });
-    }
-
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-    }
-
-    function generatePDF() {
-      const status = document.getElementById('statusMessage');
-      if (images.length === 0) {
-        status.innerText = "Please upload at least one image.";
-        return;
-      }
-
-      status.innerText = "Generating PDF...";
-      setTimeout(() => {
-        status.innerText = "✅ PDF generated (simulated)";
-      }, 2000);
-    }
-  </script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JPG to PDF Converter</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #e0f7ff;
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
     }
-    .dark-mode {
-      background-color: #121212;
+
+    body {
+      background-color: #e6f2ff; /* Light blue */
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: #3399ff; /* Blue strip */
+      padding: 10px 20px;
       color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-    header, footer {
-      text-align: center;
-      margin-bottom: 20px;
+
+    .menu {
+      display: flex;
+      gap: 15px;
+      font-weight: bold;
     }
-    .centered {
+
+    .menu a {
+      color: white;
+      text-decoration: none;
+    }
+
+    main {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 30px 20px;
       text-align: center;
     }
-    #previewContainer {
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 30px;
+      font-weight: bold;
+    }
+
+    .upload-box {
+      background-color: #b3e0ff; /* Skyblue */
+      border: 2px dashed #007acc;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 700px;
+      padding: 60px 20px;
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      padding: 15px;
-      background-color: #b3e5fc;
-      border-radius: 8px;
-      margin-top: 10px;
-      margin-bottom: 20px;
-      justify-content: center;
-    }
-    .preview-image {
-      position: relative;
-    }
-    .preview-image img {
-      max-width: 100px;
-      border-radius: 8px;
-    }
-    .delete-btn {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background: red;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-    }
-    .pdf-options {
-      margin-top: 20px;
-      margin-bottom: 20px;
-    }
-    .navbar {
-      background-color: #007BFF;
-      color: white;
-      display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .upload-box input[type='file'] {
+      display: none;
+    }
+
+    .upload-box label {
+      background-color: #007acc;
+      color: white;
       padding: 10px 20px;
-      flex-wrap: wrap;
-    }
-    .nav-title {
-      font-weight: bold;
-      font-size: 1.2em;
-    }
-    .nav-menu {
-      list-style: none;
-      display: flex;
-      gap: 20px;
-      padding: 0;
-      margin: 0;
-    }
-    .nav-menu li {
+      border-radius: 5px;
       cursor: pointer;
-    }
-    .nav-menu .active {
       font-weight: bold;
-      text-decoration: underline;
+      margin-bottom: 10px;
     }
-    @media (max-width: 768px) {
-      .nav-menu {
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 10px;
-      }
-      .navbar {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .preview-image img {
-        max-width: 80px;
-      }
-      input[type="file"] {
-        width: 100%;
-      }
+
+    .drop-text {
+      color: #333;
+      font-size: 14px;
+    }
+
+    footer {
+      background-color: #3399ff;
+      color: white;
+      text-align: center;
+      padding: 10px 20px;
+      font-size: 14px;
     }
   </style>
+</head>
+
+<body>
+  <header>
+    <div class="logo">Aasman Tools</div>
+    <nav class="menu">
+      <a href="#">JPG to PDF</a>
+      <a href="#">(More Tools Coming)</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Convert JPG to PDF</h1>
+    <div class="upload-box">
+      <label for="fileInput">CHOOSE FILES</label>
+      <input type="file" id="fileInput" accept="image/jpeg" multiple />
+      <div class="drop-text">or drop files here</div>
+    </div>
+  </main>
+
+  <footer>
+    Made with ❤️ in India | Copowered by Aasman
+  </footer>
+
+  <!-- JS functionality can be added here later -->
 </body>
+
 </html>
+
 
 

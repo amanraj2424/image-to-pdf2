@@ -19,7 +19,6 @@
       flex-direction: column;
       min-height: 100vh;
       align-items: center;
-      justify-content: center;
       text-align: center;
     }
 
@@ -120,6 +119,14 @@
       width: 100%;
       font-size: 14px;
     }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      padding: 20px;
+    }
   </style>
 </head>
 
@@ -132,31 +139,35 @@
     </nav>
   </header>
 
-  <h1>Convert JPG to PDF</h1>
+  <div class="container">
+    <h1>Convert JPG to PDF</h1>
 
-  <div class="upload-container">
-    <label for="fileInput">CHOOSE FILES</label>
-    <input type="file" id="fileInput" accept="image/jpeg" multiple>
-  </div>
+    <div class="upload-container">
+      <label for="fileInput">CHOOSE FILES</label>
+      <input type="file" id="fileInput" accept="image/jpeg" multiple>
+    </div>
 
-  <p style="margin-top: 20px;">or drop files here</p>
-  <div id="preview"></div>
-  <div class="options">
-    <label>Page Size:
-      <select id="pageSize">
-        <option value="a4">A4</option>
-        <option value="letter">Letter</option>
-      </select>
-    </label>
-    <label>Orientation:
-      <select id="orientation">
-        <option value="portrait">Portrait</option>
-        <option value="landscape">Landscape</option>
-      </select>
-    </label>
+    <p style="margin-top: 20px;">or drop files here</p>
+    <div id="preview"></div>
+
+    <div class="options">
+      <label>Page Size:
+        <select id="pageSize">
+          <option value="a4">A4</option>
+          <option value="letter">Letter</option>
+        </select>
+      </label>
+      <label>Orientation:
+        <select id="orientation">
+          <option value="portrait">Portrait</option>
+          <option value="landscape">Landscape</option>
+        </select>
+      </label>
+    </div>
+
+    <button onclick="generatePDF()">Download PDF</button>
+    <p id="status"></p>
   </div>
-  <button onclick="generatePDF()">Download PDF</button>
-  <p id="status"></p>
 
   <footer>
     Made with ❤️ in India | Copowered by Aasman
@@ -222,7 +233,3 @@
 </body>
 
 </html>
-
-
-
-

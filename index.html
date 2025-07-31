@@ -3,118 +3,139 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Image to PDF Converter</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 30px auto;
-      text-align: center;
-      padding: 20px;
-    }
     #dropZone {
       border: 2px dashed #aaa;
       padding: 30px;
-      margin: 20px 0;
       border-radius: 10px;
-      cursor: pointer;
       background-color: #f9f9f9;
+      cursor: pointer;
     }
     #dropZone.hover {
       background-color: #e0f7fa;
     }
-    input[type="file"] {
+    .image-thumb {
+      max-width: 100px;
+      margin: 10px;
+      cursor: move;
+    }
+    #loader {
       display: none;
-    }
-    #preview img {
-      max-width: 100%;
-      margin: 10px 0;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      margin: 20px 0;
-    }
-    footer {
-      margin-top: 40px;
-      font-size: 14px;
-      color: #555;
     }
   </style>
 </head>
-<body>
-  <h2>Image to PDF Converter</h2>
-  <label id="dropZone">
-    Drag & Drop JPG or PNG images here or click to upload
-    <input type="file" id="fileInput" multiple accept="image/jpeg, image/png">
-  </label>
-  <div id="preview"></div>
-  <button onclick="convertToPDF()">Convert to PDF</button>
-  <footer>Made with ❤️ in India | Co-powered by Aasman</footer>
+<body class="bg-light">
+  <div class="container py-4">
+    <h2 class="text-center mb-4">Image to PDF Converter</h2>
+
+    <div id="dropZone" class="text-center mb-3">
+      <p class="mb-0">Drag & Drop JPG/PNG or <span class="text-primary">Click to Upload</span></p>
+      <input type="file" id="fileInput" multiple accept="image/jpeg, image/png" hidden>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-center sortable" id="preview"></div>
+
+    <div class="text-center mt-4">
+      <button id="convertBtn" class="btn btn-primary">Convert to PDF</button>
+      <div id="loader" class="mt-2 text-muted">Converting... Please wait.</div>
+    </div>
+
+    <div class="text-center mt-3">
+      <button class="btn btn-outline-secondary" onclick="copyLink()">🔗 Share This Tool</button>
+      <div id="copied" class="text-success mt-1" style="display:none;">Link copied!</div>
+    </div>
+
+    <footer class="text-center mt-5 text-muted small">
+      Made with ❤️ in India | Co-powered by Aasman
+    </footer>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script>
     const { jsPDF } = window.jspdf;
     const fileInput = document.getElementById('fileInput');
     const dropZone = document.getElementById('dropZone');
     const preview = document.getElementById('preview');
+    const loader = document.getElementById('loader');
     let images = [];
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
     fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
     dropZone.addEventListener('dragover', (e) => {
       e.preventDefault();
       dropZone.classList.add('hover');
     });
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('hover');
-    });
+
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('hover'));
+
     dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
       dropZone.classList.remove('hover');
       handleFiles(e.dataTransfer.files);
     });
-    dropZone.addEventListener('click', () => {
-      fileInput.click();
-    });
+
     function handleFiles(files) {
+      images = [];
       preview.innerHTML = '';
-      images = Array.from(files).filter(file => file.type === 'image/jpeg' || file.type === 'image/png');
-      if (images.length === 0) {
-        alert('Only JPG and PNG images are allowed.');
-        return;
-      }
-      images.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          preview.appendChild(img);
-        };
-        reader.readAsDataURL(file);
+      Array.from(files).forEach(file => {
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = "image-thumb";
+            img.setAttribute('data-file', file.name);
+            preview.appendChild(img);
+            images.push(e.target.result);
+          };
+          reader.readAsDataURL(file);
+        }
       });
     }
-    function convertToPDF() {
-      if (images.length === 0) return alert("Please upload images first.");
+
+    new Sortable(preview, {
+      animation: 150,
+    });
+
+    document.getElementById('convertBtn').addEventListener('click', () => {
+      if (preview.children.length === 0) return alert("Please upload images first.");
+
+      loader.style.display = "block";
       const pdf = new jsPDF();
+
+      const orderedImages = Array.from(preview.children).map(img => img.src);
       let count = 0;
-      images.forEach((file, index) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = new Image();
-          img.src = e.target.result;
-          img.onload = () => {
-            const width = pdf.internal.pageSize.getWidth();
-            const height = (img.height * width) / img.width;
-            if (index !== 0) pdf.addPage();
-            pdf.addImage(img, img.src.startsWith('data:image/png') ? 'PNG' : 'JPEG', 0, 0, width, height);
-            count++;
-            if (count === images.length) {
-              pdf.save('converted.pdf');
-            }
-          };
+
+      orderedImages.forEach((src, i) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+          const width = pdf.internal.pageSize.getWidth();
+          const height = (img.height * width) / img.width;
+          if (i !== 0) pdf.addPage();
+          pdf.addImage(img, src.startsWith('data:image/png') ? 'PNG' : 'JPEG', 0, 0, width, height);
+          count++;
+          if (count === orderedImages.length) {
+            pdf.save("converted.pdf");
+            loader.style.display = "none";
+          }
         };
-        reader.readAsDataURL(file);
+      });
+    });
+
+    function copyLink() {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        document.getElementById('copied').style.display = 'block';
+        setTimeout(() => document.getElementById('copied').style.display = 'none', 2000);
       });
     }
   </script>
 </body>
 </html>
+

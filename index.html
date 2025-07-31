@@ -59,6 +59,13 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      position: relative;
+    }
+
+    .upload-container .hint {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #004d80;
     }
 
     #fileInput {
@@ -127,6 +134,43 @@
       width: 100%;
       padding: 20px;
     }
+
+    .tooltip {
+      border-bottom: 1px dotted #000;
+      cursor: help;
+      position: relative;
+    }
+
+    .tooltip:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      background: #333;
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 5px;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
+    #progressBar {
+      width: 100%;
+      max-width: 600px;
+      height: 10px;
+      background-color: #ccc;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 10px;
+      display: none;
+    }
+
+    #progressBarInner {
+      height: 100%;
+      width: 0%;
+      background-color: #007acc;
+      transition: width 0.3s;
+    }
   </style>
 </head>
 
@@ -142,22 +186,22 @@
   <div class="container">
     <h1>Convert JPG to PDF</h1>
 
-    <div class="upload-container">
+    <div class="upload-container" id="dropArea">
       <label for="fileInput">CHOOSE FILES</label>
+      <span class="hint">or drop files here</span>
       <input type="file" id="fileInput" accept="image/jpeg" multiple>
     </div>
 
-    <p style="margin-top: 20px;">or drop files here</p>
     <div id="preview"></div>
 
     <div class="options">
-      <label>Page Size:
+      <label class="tooltip" data-tooltip="Standard paper size">Page Size:
         <select id="pageSize">
           <option value="a4">A4</option>
           <option value="letter">Letter</option>
         </select>
       </label>
-      <label>Orientation:
+      <label class="tooltip" data-tooltip="Vertical or horizontal layout">Orientation:
         <select id="orientation">
           <option value="portrait">Portrait</option>
           <option value="landscape">Landscape</option>
@@ -166,6 +210,7 @@
     </div>
 
     <button onclick="generatePDF()">Download PDF</button>
+    <div id="progressBar"><div id="progressBarInner"></div></div>
     <p id="status"></p>
   </div>
 
@@ -178,10 +223,34 @@
     const fileInput = document.getElementById('fileInput');
     const preview = document.getElementById('preview');
     const statusText = document.getElementById('status');
+    const dropArea = document.getElementById('dropArea');
+    const progressBar = document.getElementById('progressBar');
+    const progressBarInner = document.getElementById('progressBarInner');
+
+    dropArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropArea.style.backgroundColor = '#99d6ff';
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+      dropArea.style.backgroundColor = '#b3e0ff';
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropArea.style.backgroundColor = '#b3e0ff';
+      const files = e.dataTransfer.files;
+      fileInput.files = files;
+      handleFilePreview(files);
+    });
 
     fileInput.addEventListener('change', () => {
+      handleFilePreview(fileInput.files);
+    });
+
+    function handleFilePreview(files) {
       preview.innerHTML = '';
-      Array.from(fileInput.files).forEach(file => {
+      Array.from(files).forEach(file => {
         const reader = new FileReader();
         reader.onload = e => {
           const img = document.createElement('img');
@@ -190,7 +259,7 @@
         };
         reader.readAsDataURL(file);
       });
-    });
+    }
 
     async function generatePDF() {
       const { jsPDF } = window.jspdf;
@@ -202,9 +271,12 @@
 
       const files = fileInput.files;
       if (!files.length) {
-        alert("Please select at least one image.");
+        statusText.textContent = "Please select at least one image.";
         return;
       }
+
+      progressBar.style.display = 'block';
+      progressBarInner.style.width = '0%';
 
       for (let i = 0; i < files.length; i++) {
         const imgData = await readFileAsync(files[i]);
@@ -215,10 +287,12 @@
         const height = pdf.internal.pageSize.getHeight();
         pdf.addImage(img, 'JPEG', 0, 0, width, height);
         if (i < files.length - 1) pdf.addPage();
+        progressBarInner.style.width = `${((i + 1) / files.length) * 100}%`;
       }
 
       pdf.save("converted.pdf");
       statusText.textContent = "Download complete!";
+      progressBar.style.display = 'none';
     }
 
     function readFileAsync(file) {

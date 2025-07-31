@@ -7,6 +7,15 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <nav class="navbar">
+    <div class="nav-title">🛠️ All-in-One Tools</div>
+    <ul class="nav-menu">
+      <li class="active">Image to PDF</li>
+      <li>Coming Soon</li>
+      <li>Coming Soon</li>
+    </ul>
+  </nav>
+
   <header>
     <h1>🖼️ Image to PDF Converter</h1>
     <button onclick="toggleDarkMode()">🌓 Toggle Dark Mode</button>
@@ -134,8 +143,30 @@
       margin-top: 20px;
       margin-bottom: 20px;
     }
+    .navbar {
+      background-color: #007BFF;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+    }
+    .nav-title {
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    .nav-menu {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+    .nav-menu li {
+      cursor: pointer;
+    }
+    .nav-menu .active {
+      font-weight: bold;
+      text-decoration: underline;
+    }
   </style>
 </body>
 </html>
-
-
